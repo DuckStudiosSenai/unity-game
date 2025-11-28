@@ -1,4 +1,4 @@
-const cacheName = "DuckStudios-DuckStudiosReviewGame-2.0";
+const cacheName = "DuckStudios-DuckStudiosReviewGame-3.0";
 const contentToCache = [
     "Build/Build.loader.js",
     "Build/Build.framework.js",
