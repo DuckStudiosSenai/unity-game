@@ -125,8 +125,8 @@
           console.error("[UNITY] ❌ Instância não pronta");
           return;
         }
-        console.log("[UNITY] ✅ Enviando userId para PlayFabManager.OnSiteAuth:", event.data.id);
-        unityInstance.SendMessage("PlayFabManager", "OnSiteAuth", event.data.id.toString());
+        console.log("[UNITY] ✅ Enviando userId para GameManager (PlayFabManager.OnSiteAuth):", event.data.id);
+        unityInstance.SendMessage("GameManager", "OnSiteAuth", event.data.id.toString());
         console.log("[UNITY] ✅ Mensagem enviada com sucesso!");
       });
     </script>
