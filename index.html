@@ -119,8 +119,13 @@
       
       // Listener para receber dados do site
       window.addEventListener("message", function (event) {
+        console.log("[UNITY] Mensagem recebida:", event.data);
         if (!event.data || event.data.type !== "unity-login") return;
-        if (!unityInstance) return;
+        if (!unityInstance) {
+          console.error("[UNITY] ❌ Instância não pronta");
+          return;
+        }
+        console.log("[UNITY] ✅ Enviando userId para Unity:", event.data.id);
         unityInstance.SendMessage("GameManager", "ReceiveUserId", event.data.id.toString());
       });
     </script>
