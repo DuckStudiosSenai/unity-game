@@ -58,9 +58,31 @@
 
       var buildUrl = "Build";
       var loaderUrl = buildUrl + "/Build.loader.js";
+      var unityInstance = null;
+      
+      // Carrega e junta os chunks do Build.data
+      async function loadDataFile() {
+        const numChunks = 3;
+        const chunks = [];
+        for (let i = 0; i < numChunks; i++) {
+          progressBarFull.style.width = (i / numChunks * 20) + "%";
+          const response = await fetch(buildUrl + "/Build.data." + i);
+          if (!response.ok) throw new Error("Erro ao carregar parte " + i);
+          chunks.push(await response.arrayBuffer());
+        }
+        const totalSize = chunks.reduce((sum, c) => sum + c.byteLength, 0);
+        const combined = new Uint8Array(totalSize);
+        let offset = 0;
+        for (const chunk of chunks) {
+          combined.set(new Uint8Array(chunk), offset);
+          offset += chunk.byteLength;
+        }
+        return URL.createObjectURL(new Blob([combined]));
+      }
+      
       var config = {
         arguments: [],
-        dataUrl: buildUrl + "/Build.data",
+        dataUrl: null,
         frameworkUrl: buildUrl + "/Build.framework.js",
         codeUrl: buildUrl + "/Build.wasm",
         streamingAssetsUrl: "StreamingAssets",
@@ -68,44 +90,39 @@
         productName: "DuckStudiosReviewGame",
         productVersion: "1.0",
         showBanner: unityShowBanner,
-        // errorHandler: function(err, url, line) {
-        //    alert("error " + err + " occurred at line " + line);
-        //    // Return 'true' if you handled this error and don't want Unity
-        //    // to process it further, 'false' otherwise.
-        //    return true;
-        // },
       };
 
-      // By default Unity keeps WebGL canvas render target size matched with
-      // the DOM size of the canvas element (scaled by window.devicePixelRatio)
-      // Set this to false if you want to decouple this synchronization from
-      // happening inside the engine, and you would instead like to size up
-      // the canvas DOM size and WebGL render target sizes yourself.
-      // config.matchWebGLToCanvasSize = false;
-
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        // Mobile device style: fill the whole browser client area with the game canvas:
         var meta = document.createElement('meta');
         meta.name = 'viewport';
         meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
         document.getElementsByTagName('head')[0].appendChild(meta);
       }
 
-
       loadingBar.style.display = "block";
 
       var script = document.createElement("script");
       script.src = loaderUrl;
-      script.onload = () => {
+      script.onload = async () => {
+        config.dataUrl = await loadDataFile();
         createUnityInstance(canvas, config, (progress) => {
-          progressBarFull.style.width = 100 * progress + "%";
-        }).then((unityInstance) => {
+          progressBarFull.style.width = (20 + progress * 80) + "%";
+        }).then((instance) => {
+          unityInstance = instance;
           loadingBar.style.display = "none";
+          window.parent.postMessage({ type: "unity-ready" }, "*");
         }).catch((message) => {
           alert(message);
         });
       };
       document.body.appendChild(script);
+      
+      // Listener para receber dados do site
+      window.addEventListener("message", function (event) {
+        if (!event.data || event.data.type !== "unity-login") return;
+        if (!unityInstance) return;
+        unityInstance.SendMessage("GameManager", "ReceiveUserId", event.data.id.toString());
+      });
     </script>
   </body>
 </html>
