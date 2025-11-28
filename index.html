@@ -126,7 +126,7 @@
           return;
         }
         console.log("[UNITY] ✅ Enviando userId para Unity:", event.data.id);
-        unityInstance.SendMessage("GameManager", "ReceiveUserId", event.data.id.toString());
+        unityInstance.SendMessage("PlayFabManager", "OnSiteAuth", event.data.id.toString());
       });
     </script>
   </body>
