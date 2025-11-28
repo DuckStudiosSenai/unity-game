@@ -125,9 +125,19 @@
           console.error("[UNITY] ❌ Instância não pronta");
           return;
         }
-        console.log("[UNITY] ✅ Enviando userId para GameManager.OnSiteAuth:", event.data.id);
-        unityInstance.SendMessage("GameManager", "OnSiteAuth", event.data.id.toString());
-        console.log("[UNITY] ✅ Mensagem enviada!");
+        console.log("[UNITY] ✅ Enviando userId:", event.data.id);
+        try {
+          unityInstance.SendMessage("GameManager", "OnSiteAuth", event.data.id.toString());
+          console.log("[UNITY] ✅ Mensagem enviada para GameManager!");
+        } catch (e) {
+          console.error("[UNITY] ❌ Erro ao enviar para GameManager:", e);
+          try {
+            unityInstance.SendMessage("PlayFabManager", "OnSiteAuth", event.data.id.toString());
+            console.log("[UNITY] ✅ Mensagem enviada para PlayFabManager!");
+          } catch (e2) {
+            console.error("[UNITY] ❌ Erro ao enviar para PlayFabManager:", e2);
+          }
+        }
       });
     </script>
   </body>
